@@ -1,0 +1,120 @@
+% Author: Vivek Myers <vivek.myers@gmail.com>
+% Date: 2024-09-17
+% Package to adjust HSB values of colors
+
+\ProvidesPackage{colorlib}
+\RequirePackage{xcolor}
+\RequirePackage{pgf}
+\RequirePackage{tikz}
+\usetikzlibrary{colorbrewer}
+
+\newcommand{\convert@direct}[3][hsb]{%
+    \expandafter\extractcolorspecs\expanded{{#2}}{\modelcmd}{\colorcmd}%
+    \convertcolorspec{\modelcmd}{\colorcmd}{#1}{#3}%
+}
+\def\@first#1,#2,#3,{#1}
+\def\@second#1,#2,#3,{#2}
+\def\@third#1,#2,#3,{#3}
+\newcommand{\hue}[2]{%
+    \convert@direct{#1}{\hsb@value}%
+    \edef#2{\expandafter\@first\expanded{\hsb@value},}%
+}
+\newcommand{\saturation}[2]{%
+    \convert@direct{#1}{\hsb@value}%
+    \edef#2{\expandafter\@second\expanded{\hsb@value},}%
+}
+\newcommand{\brightness}[2]{%
+    \convert@direct{#1}{\hsb@value}%
+    \edef#2{\expandafter\@third\expanded{\hsb@value},}%
+}
+
+\newcommand{\make@rgb}[1]{%
+    \convert@direct[rgb]{#1}{\rgb@value}%
+    \edef\rgb@def{\noexpand\definecolor{rgb@#1}{rgb}{\rgb@value}}%
+    \expandafter\xglobal\rgb@def%
+}
+
+\def\@assign@new@color#1[#2]{%
+    \xglobal\colorlet{#2}{rgb@tmp@#1}%
+    \endgroup%
+}
+
+\newcommand\saturate[2][0.1]{%
+    \begingroup%
+    \hue{#2}{\old@hue}%
+    \saturation{#2}{\old@sat}%
+    \brightness{#2}{\old@bri}%
+    \pgfmathsetmacro\new@hue{\old@hue}%
+    \pgfmathsetmacro\new@sat{max(min(\old@sat+(#1),255),0)}%
+    \pgfmathsetmacro\new@bri{\old@bri}%
+    \expanded{\noexpand\definecolor{tmp@#2}{hsb}{\new@hue,\new@sat,\new@bri}}%
+    \make@rgb{tmp@#2}%
+    \@ifnextchar[{\@assign@new@color{#2}}{\@assign@new@color{#2}[#2]}%
+}
+
+\newcommand\desaturate[2][0.1]{%
+    \saturate[-#1]{#2}%
+}
+
+\newcommand\brighten[2][0.1]{%
+    \begingroup%
+    \hue{#2}{\old@hue}%
+    \saturation{#2}{\old@sat}%
+    \brightness{#2}{\old@bri}%
+    \pgfmathsetmacro\new@hue{\old@hue}%
+    \pgfmathsetmacro\new@sat{\old@sat}%
+    \pgfmathsetmacro\new@bri{max(min(\old@bri+(#1),1),0)}%
+    \expanded{\noexpand\definecolor{tmp@#2}{hsb}{\new@hue,\new@sat,\new@bri}}%
+    \make@rgb{tmp@#2}%
+    \@ifnextchar[{\@assign@new@color{#2}}{\@assign@new@color{#2}[#2]}%
+}
+
+\newcommand\darken[2][0.1]{%
+    \brighten[-#1]{#2}%
+}
+
+\newcommand\shifthue[2][0.1]{%
+    \begingroup
+    \hue{#2}{\old@hue}%
+    \saturation{#2}{\old@sat}%
+    \brightness{#2}{\old@bri}%
+    \pgfmathsetmacro\new@hue{mod(\old@hue+(#1),1.0)}%
+    \pgfmathsetmacro\new@sat{\old@sat}%
+    \pgfmathsetmacro\new@bri{\old@bri}%
+    \expanded{\noexpand\definecolor{tmp@#2}{hsb}{\new@hue,\new@sat,\new@bri}}%
+    \make@rgb{tmp@#2}%
+    \@ifnextchar[{\@assign@new@color{#2}}{\@assign@new@color{#2}[#2]}%
+}
+
+\definecolor{theme0}{HTML}{AAAAAA}
+\definecolor{theme1}{HTML}{DC8243}
+\definecolor{theme2}{HTML}{009193}
+\definecolor{theme3}{HTML}{F2C57C}
+\definecolor{theme4}{HTML}{90C56C}
+\definecolor{theme5}{HTML}{BEBADA}
+\definecolor{theme6}{HTML}{C7A7A8}
+\definecolor{theme7}{HTML}{FCADD2}
+
+\darken[0.15]{theme0}[text0]
+\saturate{theme1}[text1]
+\saturate{theme2}[text2]
+\saturate{theme3}[text3] \darken[0.05]{text3}
+\saturate{theme4}[text4] \darken{text4}
+\saturate{theme5}[text5] \darken{text5}
+\saturate{theme6}[text6] \darken{text6}
+\saturate{theme7}[text7] \darken{text7}
+
+\colorlet{vivid1}{RdPu-E} \saturate{vivid1}
+\colorlet{vivid2}{RdPu-G}
+\colorlet{vivid3}{RdPu-I}
+\colorlet{vivid4}{RdPu-K}
+\colorlet{vivid5}{RdPu-M}
+
+\colorlet{plain1}{YlOrBr-E} \darken{plain1} \saturate{plain1}
+\colorlet{plain2}{YlOrBr-G}
+\colorlet{plain3}{YlOrBr-I}
+\colorlet{plain4}{YlOrBr-K}
+\colorlet{plain5}{YlOrBr-M}
+
+\definecolor{good}{rgb}{0,0.55,0}
+\definecolor{bad}{rgb}{0.75,0,0}

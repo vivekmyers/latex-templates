@@ -1,0 +1,138 @@
+% Author: Vivek Myers <vivek.myers@gmail.com>
+% Date: 2024-08-30
+% math macros
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{macros}[2024-08-30 math macros]
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{amsfonts}
+\RequirePackage{etoolbox}
+\RequirePackage{environ}
+\RequirePackage{pifont}
+
+\newcount\cnt@let\cnt@let=`A
+\loop
+\bgroup
+\lccode`@=\cnt@let
+\lowercase{
+    \egroup
+    \expandafter\providerobustcmd\csname b@\endcsname{\mathbb{@}}
+    \expandafter\providerobustcmd\csname c@\endcsname{\mathcal{@}}
+}
+\advance\cnt@let by 1
+\unless\ifnum\cnt@let>`Z
+\repeat
+
+\providecommand\providemathop@i[2]{\ifdefined#1\else\DeclareMathOperator{#1}{#2}\fi}
+\providecommand\providemathop@ii[2]{\ifdefined#1\else\DeclareMathOperator*{#1}{#2}\fi}
+\def\providemathop{\@ifstar\providemathop@ii\providemathop@i}
+
+\providerobustcmd{\bbm}[1]{\operatorname{\text{\usefont{U}{DSSerif}{m}{n}#1}}}
+\def\1{\bbm{1}}
+\providerobustcmd\dd{\mathop{}\!\mathrm{d}}
+\providerobustcmd\dfn{\mathop{}\!\delta}
+\providerobustcmd\pdd{\mathop{}\!\partial}
+\providerobustcmd{\dkl}[3][\big]{D_{\text{KL}}#1(#2\mathbin{#1\Vert}#3#1)}
+\providerobustcmd{\djs}[3][\big]{D_{\text{JS}}#1(#2\mathbin{#1\Vert}#3#1)}
+\providerobustcmd{\dtv}[3][\big]{D_{\text{TV}}#1(#2\mathbin{#1\Vert}#3#1)}
+\providerobustcmd{\bigmid}{\mathrel{\bigm\vert}}
+\providerobustcmd{\biggmid}{\mathrel{\biggm\vert}}
+\providerobustcmd{\Bigmid}{\mathrel{\Bigm\vert}}
+\providerobustcmd{\Biggmid}{\mathrel{\Biggm\vert}}
+
+\def\--{\unskip\hskip.16667em plus 0.1em\mbox{---}\penalty\exhyphenpenalty\hskip.16667em plus 0.1em\ignorespaces}
+\providerobustcmd{\cmark}{\ding{51}}%
+\providerobustcmd{\xmark}{\ding{55}}%
+
+\DeclareMathDelimiter{\mvert}{\mathrel}{symbols}{"6A}{largesymbols}{"0C}
+\DeclareMathDelimiter{\mVert}{\mathrel}{symbols}{"6B}{largesymbols}{"0D}
+
+\providemathop*{\argmax}{arg\,max}
+\providemathop*{\argmin}{arg\,min}
+\providemathop{\supp}{supp}
+\providemathop{\diag}{diag}
+\providemathop{\tr}{tr}
+\providemathop{\rank}{rank}
+\providemathop{\p}{P}
+\providemathop{\E}{\mathbb{E}}
+\providemathop*{\var}{Var}
+\providemathop*{\cov}{Cov}
+\providemathop*{\corr}{Corr}
+
+\providecommand{\raisemath}[1]{\mathpalette{\raisemath@i{#1}}}
+\providecommand{\raisemath@i}[3]{\raisebox{#1}{$#2#3$}}
+\providecommand{\block}{\raisemath{-0.17ex}{\blacksquare}}
+\providecommand\multiblock[2][1]{%
+	\mbox{%
+		\centering%
+		\begingroup%
+		\newcount\x%
+		\foreach \c in {#2} {%
+				\global\advance\x by 1%
+			}%
+		\pgfmathsetmacro\@scale{(#1)*0.3}%
+		\raise -0.17ex\hbox{%
+			\tikz[scale=0.3]{%
+				\draw (0,0) rectangle (1,1);%
+				\foreach \c [count=\i] in {#2} {%
+						\fill[\c] (0,0) rectangle (1,1);%
+						\pgfmathsetmacro{\y}{2-2*(\i/\x)}%
+						\clip (0,\y) -- (\y,0) -- (0,0) -- cycle;%
+					}%
+			}%
+		}%
+		\kern -0.2em%
+		\endgroup%
+	}%
+}
+\def\ignoreparspaces{%
+	\begingroup%
+	\catcode13=10%
+	\@ifnextchar\par%
+	{\endgroup\expandafter\ignore@parspace\@gobble}%
+	{\endgroup}%
+}
+
+\providecommand{\eqmark}{\refstepcounter{equation}\tag\theequation}
+\providecommand{\refas}[2]{\hyperlink{#2}{#1~\ref*{#2}}}
+\providecommand{\require}[1]{\IfFileExists{#1}{}{\typeout{No file #1.}}}
+\let\gobble=\@gobble
+
+\long\def\makerestatable\begin#1#2\label#3{%
+    \global\csletcs{#1@i}{#1}%
+    \global\csletcs{end#1@i}{end#1}%
+    \RenewEnviron{#1}{%
+        \global\csletcs{#1}{#1@i}%
+        \global\csletcs{end#1}{end#1@i}%
+        \xdef\tmp@a{%
+            \unexpanded{\begin{restatable}#2{#1}{rst@#3}\label{#3}}%
+            \expandafter\unexpanded\expandafter{\BODY}%
+            \unexpanded{\end{restatable}}%
+        }%
+        \aftergroup\tmp@a%
+    }%
+    \begin{#1}%
+}
+
+\def\restatetheorem#1{%
+    \begingroup%
+    \ifcsname rst@#1\endcsname%
+        \def\addtocontents##1##2{}%
+        \csuse{rst@#1}*%
+    \else%
+        \errmessage{No restatable environment for #1}%
+    \fi%
+    \endgroup%
+}
+
+\providecommand{\auxdef}[2]{%
+    \protected@write\@auxout{}{\protect\expandafter\gdef%
+    \protect\csname\expanded{#1}\endcsname{#2}}%
+}
+
+\providecommand{\auxuse}[1]{%
+    \ifcsname#1\endcsname\@nameuse{#1}%
+        \else\@latex@warning{Undefined aux definition #1. Rerun to check if defined.}%
+    \fi%
+}

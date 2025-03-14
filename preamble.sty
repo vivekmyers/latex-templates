@@ -1,0 +1,279 @@
+% Author: Vivek Myers <vivek.myers@gmail.com>
+% Date: 2024-09-02
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{preamble}[paper preamble template]
+
+\RequirePackage{xkeyval}
+\RequirePackage{colorlib}
+
+\newif\if@no@natbib
+\newif\if@compact
+\providecommand{\RequirePackage@hyperref}{\RequirePackage{hyperref}}
+\providecommand{\@hypersetup}[1]{\hypersetup{#1}}
+
+\DeclareOptionX{compact}{
+    \@compacttrue
+}
+\DeclareOptionX{numbers}{
+    \PassOptionsToPackage{numbers}{natbib}
+}
+\DeclareOptionX{linkcolor}{
+    \colorlet{link color}{#1}
+}
+\DeclareOptionX{theoremsin}{%
+    \def\theorem@counter{#1}%
+}
+\DeclareOptionX{nohyperref}{
+    \let\@hypersetup\@gobble
+    \let\RequirePackage@hyperref\relax
+}
+
+\ProcessOptionsX
+
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{amsfonts}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{thmtools}
+\RequirePackage{cancel}
+
+\PassOptionsToPackage{capitalize,nameinlink}{cleveref}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage@hyperref
+\RequirePackage{cleveref}
+\RequirePackage{natbib}
+\RequirePackage{crossreftools}
+\RequirePackage{url}
+
+\PassOptionsToPackage{abspath}{currfile}
+\RequirePackage{ifthen}
+\RequirePackage{etoolbox}
+\RequirePackage{xpatch}
+\RequirePackage{currfile}
+
+\pdfstringdefDisableCommands{%
+    \let\Cref\crtCref%
+    \let\cref\crtcref%
+}
+
+\RequirePackage{nicefrac}
+\RequirePackage{microtype}
+\RequirePackage{enumitem}
+
+\PassOptionsToPackage{bottom}{footmisc}
+\RequirePackage{wrapfig}
+\RequirePackage{graphicx}
+\RequirePackage{subcaption}
+\RequirePackage{placeins}
+\RequirePackage{footmisc}
+\RequirePackage{float}
+
+\PassOptionsToPackage{para,online,flushleft}{threeparttable}
+\RequirePackage{booktabs}
+\RequirePackage{tablefootnote}
+\RequirePackage{colortbl}
+\RequirePackage{makecell}
+\RequirePackage{threeparttable}
+
+\RequirePackage{algorithm}
+\RequirePackage{algpseudocodex}
+\RequirePackage{listings}
+\RequirePackage{textcomp}
+\getabspath{\jobname.log}
+\PassOptionsToPackage{finalizecache,outputdir=\theabsdir}{minted}
+\RequirePackage{minted}
+
+\PassOptionsToPackage{most}{tcolorbox}
+\RequirePackage{todonotes}
+\RequirePackage{tcolorbox}
+
+\RequirePackage{standalone}
+\RequirePackage{tikz}
+\RequirePackage{tikz-cd}
+\RequirePackage{pgfplots}
+\RequirePackage{pgfplotstable}
+
+\RequirePackage{macros}
+
+\if@compact
+    \RequirePackage{titlesec}
+    \AtBeginDocument{
+        \titlespacing{\section}{0em}{1ex plus 2ex}{0ex}
+        \titlespacing{\subsection}{0em}{0.75ex plus 1.5ex}{0ex}
+        \titlespacing{\subsubsection}{0em}{0.5ex plus 1ex}{0ex}
+        \titlespacing{\paragraph}{0em}{0ex}{1em}
+        \titlespacing{\subparagraph}{0em}{0ex}{1em}
+        \abovecaptionskip=5pt plus 3pt minus 2pt
+        \parskip=\dimexpr\parskip-2pt plus 2pt minus 1pt\relax
+        \intextsep=7pt plus 3pt minus 2pt
+        \textfloatsep=7pt plus 3pt minus 2pt
+        \floatsep=10pt plus 4pt minus 2pt
+        \abovedisplayskip=4pt plus 3pt minus 2pt
+        \belowdisplayskip=4pt plus 3pt minus 2pt
+        \abovedisplayshortskip=-7pt plus 4pt
+        \itemsep=0pt
+        \partopsep=0pt
+        \captionsetup{font=footnotesize}
+    }
+\fi
+
+\bibsep=\smallskipamount
+
+\usetikzlibrary{calc,fit,decorations.pathmorphing}
+\usetikzlibrary{shapes,arrows,patterns.meta}
+\usepgfplotslibrary{fillbetween}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+\captionsetup[algorithm]{labelsep=colon}
+
+\providecolor{link color}{HTML}{626572}
+\@hypersetup{
+    colorlinks=true,
+    citecolor=link color,
+    linkcolor=link color,
+    urlcolor=link color,
+}
+
+\pgfplotsset{
+    si ticks/.style={
+        xticklabel={
+            \pgfmathparse{\tick}
+            \pgfmathtruncatemacro\trunc{\pgfmathresult}
+            \pgfkeys{/pgf/fpu=true}
+            \ifnum0=\trunc
+            \else
+                \ifnum1000<\trunc
+                    \pgfmathparse{\pgfmathresult/1000}
+                    \ifnum\trunc<1000000\relax
+                        \pgfmathprintnumber{\pgfmathresult}k
+                    \else
+                        \pgfmathparse{\pgfmathresult/1000}
+                        \pgfmathprintnumber{\pgfmathresult}M
+                    \fi
+                \else
+                    \pgfmathprintnumber{\trunc}
+                \fi
+            \fi
+            \pgfkeys{/pgf/fpu=false}
+        }
+    }
+}
+
+\pgfplotsset{
+    grid=major,
+    grid style={gray!30,dashed},
+    width=7cm,
+    height=5cm,
+    legend cell align=left,
+    axis lines=left,
+    scaled x ticks=false,
+    legend columns=3,
+    legend style={draw=none,at={(0.8,0.5)},anchor=center,/tikz/every even
+    column/.append style={column sep=0.5cm},legend image post style={ultra thick}},
+}
+
+\newcommand\thm@gobble[2][]{\thm@gobble@i}
+\newcommand\thm@gobble@i[1][]{}
+\def\providetheorem#1{%
+    \@ifundefined{#1}{%
+        \newtheorem{#1}%
+    }{%
+        \thm@gobble%
+    }%
+}
+\ifdefined\theorem@counter
+    \def\declare@theorems#1{
+        \providetheorem{theorem}{Theorem}[#1]
+        \providetheorem{lemma}[theorem]{Lemma}
+        \providetheorem{remark}[theorem]{Remark}
+        \providetheorem{proposition}[theorem]{Proposition}
+        \providetheorem{corollary}{Corollary}[theorem]
+        \providetheorem{definition}{Definition}[#1]
+        \providetheorem{assumption}{Assumption}[#1]
+        \providetheorem{question}{Question}[#1]
+    }
+    \expanded{\noexpand\declare@theorems{\theorem@counter}}
+\else
+    \providetheorem{theorem}{Theorem}
+    \providetheorem{lemma}[theorem]{Lemma}
+    \providetheorem{remark}[theorem]{Remark}
+    \providetheorem{proposition}[theorem]{Proposition}
+    \providetheorem{corollary}{Corollary}[theorem]
+    \providetheorem{definition}{Definition}
+    \providetheorem{assumption}{Assumption}
+    \providetheorem{question}{Question}
+\fi
+
+\let\@enlarge@notice\relax
+\let\@notice@extra\relax
+\def\@notice@commands{\@notice@extra\notice@equal\notice@adv}
+\providecommand{\@noticeshift}{\@noticeshift}
+\providecommand{\notice}[1]{%
+    \gdef\@enlarge@notice{\enlargethispage{\@noticeshift}\global\let\@enlarge@notice\relax}%
+    \appto\@notice@extra{{\let\thefootnote\relax\footnotetext{#1}\@enlarge@notice}}%
+}
+
+\AtBeginDocument{%
+    \preto\maketitle{%
+        \begingroup%
+        \def\notice@equal{}%
+        \def\notice@adv{}%
+        \def\equal{%
+            \unskip%
+            {\@hypersetup{hidelinks}\def\thefootnote{\fnsymbol{footnote}}\footnotemark[1]}%
+            \gdef\@enlarge@notice{\enlargethispage{\@noticeshift}\global\let\@enlarge@notice\relax}%
+            \gdef\notice@equal{\footnotetext[1]{Equal contribution.}\@enlarge@notice}%
+        }%
+        \def\equaladv{%
+            \unskip%
+            {\@hypersetup{hidelinks}\def\thefootnote{\fnsymbol{footnote}}\footnotemark[2]}%
+            \gdef\@enlarge@notice{\enlargethispage{\@noticeshift}\global\let\@enlarge@notice\relax}%
+            \gdef\notice@adv{\footnotetext[2]{Equal advising.}\@enlarge@notice}%
+        }%
+    }
+    \appto\maketitle{%
+        \def\thefootnote{\fnsymbol{footnote}}%
+        \@enlarge@notice%
+        \@notice@commands%
+        \endgroup%
+    }
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    keepspaces=true,                 
+    numbers=left,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    numbersep=5pt, 
+    keepspaces=true,  
+    xleftmargin=12pt,
+    upquote=true,
+}
+
+\xpatchcmd{\theFancyVerbLine}{\tiny}{\footnotesize\color{codegray}}{}{}
+\setminted{
+    style=manni,
+    fontfamily=tt,
+    autogobble,
+    breaklines,
+    linenos,
+    numbersep=1em,
+    xleftmargin=2em,
+}

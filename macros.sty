@@ -59,6 +59,8 @@
 \providemathop*{\var}{Var}
 \providemathop*{\cov}{Cov}
 \providemathop*{\corr}{Corr}
+\newcommand*{\T}{{\mathpalette\@transpose{}}}
+\newcommand*{\@transpose}[2]{\raisebox{\depth}{$\m@th#1\mkern-1.5mu\intercal$}}
 
 \providecommand{\raisemath}[1]{\mathpalette{\raisemath@i{#1}}}
 \providecommand{\raisemath@i}[3]{\raisebox{#1}{$#2#3$}}
